@@ -1,0 +1,56 @@
+#!/usr/bin/python
+import os, sys
+from syscallinfo import *
+
+class colors:
+	GOOD = "\033[92m"
+	BAD = "\033[91m"
+	ENDC = "\033[0m"
+
+def parseSyscallInfo(syscallEntry):  
+  msg = "\n"
+
+  for entry in syscallEntry:
+  	entryInfo = syscallEntry[entry]
+
+  	if entryInfo == "-":
+  		msg += "{0}{1:15}{2} : {3}\n".format(colors.BAD, entry, colors.ENDC, entryInfo)
+  	else:
+  		msg += "{0}{1:15}{2} : {3}\n".format(colors.GOOD, entry, colors.ENDC, entryInfo)
+  
+  return msg
+
+if __name__ == "__main__":
+	tableDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tables")
+
+	info = SyscallInfo(tableDir)
+
+	if len(sys.argv) < 2:
+		print ("Available architectures: %s\n" % info.getAvailableArchitectures())
+
+		print ("Usage: %s <arch> <syscall name / syscall number>" % sys.argv[0])
+		exit()
+
+	archObj = info.getArch(sys.argv[1])
+
+	if archObj:
+		entry = None
+		
+		try:
+			syscallID = int(sys.argv[2])
+			entry = archObj.getEntryByID(syscallID)
+		except:
+			entry = archObj.getEntryByName(sys.argv[2])
+
+		if entry:
+			print (parseSyscallInfo(entry))
+		else:
+			print ("Syscall not found: %s (Arch: %s)" % (sys.argv[2], sys.argv[1]))
+	else:
+		print ("Architecture not found: %s" % sys.argv[1])
+
+
+	
+
+
+
